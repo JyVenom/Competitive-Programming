@@ -1,0 +1,74 @@
+(Analysis by Danny Mittal)
+We can solve this problem by considering all pairs of a cow going east and a cow going north in order to determine which
+cow directly stops which other cow. Let's say the cow going east starts from (x,y) and the cow going north starts from (u,v).
+Their theoretical paths intersect if x<u and v<y, in which case they must intersect at (u,y). This means that, assuming
+both cows reach (u,y) (instead of being stopped earlier), the cow that reaches (u,y) first will stop the other cow
+(if they both reach at the same time, as per the problem statement neither one is stopped).
+
+Therefore, in order to determine the stopping relations, you might naively loop through all pairs of eastward cows and
+northward cows and see which cows reach the intersection point first. However, this doesn't account for the fact that
+either one may have been stopped earlier.
+
+A clean way to deal with this is to sort all eastward cows by their y and all northward cows by their x, then loop through
+all pairs of eastward and northward cows in this order. We then keep track for each cow of whether we know it is stopped
+and the amount of cows that we know it has stopped (directly or indirectly).
+
+The sorting guarantees that each northward cow will be checked against the eastward cows in increasing order of when the
+northward cow would reach their intersection point, and similarly for the eastward cows. Because of this, when we check
+a pair of cows neither of which we know has stopped yet, we can be sure that both will reach the intersection point and
+thus the earlier one must have stopped the later one. We also know that this means that the later cow can't now reach
+any more intersections than it already has, so the amount of cows it has stopped is final and we can add it, plus 1 for
+that cow itself, to the count for the earlier cow. Note that with other approaches, it may be necessary to run a second
+pass of essentially a recursive depth-first search to identify and count sizes of "connected components" of stopped cows,
+in order to assign blame counts appropriately.
+
+The complexity of sorting is O(NlogN), and looping through all pairs of northward and eastward cows is O(N2), so the
+overall complexity is O(N2). Solutions in O(N2logN) would also be fast enough.
+
+Java code:
+
+    import java.util.ArrayList;
+    import java.util.Comparator;
+    import java.util.List;
+    import java.util.Scanner;
+
+    public class StuckInARutSilver {
+
+        public static void main(String[] args) {
+            Scanner in = new Scanner(System.in);
+            List<Integer> eastCows = new ArrayList<>();
+            List<Integer> northCows = new ArrayList<>();
+            int n = in.nextInt();
+            int[] xs = new int[n];
+            int[] ys = new int[n];
+            for (int j = 0; j < n; j++) {
+                if (in.next().charAt(0) == 'E') {
+                    eastCows.add(j);
+                } else {
+                    northCows.add(j);
+                }
+                xs[j] = in.nextInt();
+                ys[j] = in.nextInt();
+            }
+            eastCows.sort(Comparator.comparingInt(j -> ys[j]));
+            northCows.sort(Comparator.comparingInt(j -> xs[j]));
+            boolean[] isStopped = new boolean[n];
+            int[] amtStopped = new int[n];
+            for (int j : eastCows) {
+                for (int k : northCows) {
+                    if (!isStopped[j] && !isStopped[k] && xs[k] > xs[j] && ys[j] > ys[k]) {
+                        if (xs[k] - xs[j] > ys[j] - ys[k]) {
+                            isStopped[j] = true;
+                            amtStopped[k] += 1 + amtStopped[j];
+                        } else if (ys[j] - ys[k] > xs[k] - xs[j]) {
+                            isStopped[k] = true;
+                            amtStopped[j] += 1 + amtStopped[k];
+                        }
+                    }
+                }
+            }
+            for (int j = 0; j < n; j++) {
+                System.out.println(amtStopped[j]);
+            }
+        }
+    }

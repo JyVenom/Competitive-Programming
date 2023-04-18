@@ -1,0 +1,66 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+int BIT[1000001], n;
+void update(int x, int delta)
+{
+      for(; x <= n; x += x&-x)
+        BIT[x] += delta;
+}
+int query(int x)
+{
+     int sum = 0;
+     for(; x > 0; x -= x&-x)
+        sum += BIT[x];
+     return sum;
+}
+
+int main() {
+    cin.tie(0);
+    ios_base::sync_with_stdio(false);
+    
+    cin>>n;
+    vector<pair<int, int>> vals;
+    for (int i = 1; i <= n; ++i) {
+        int tmp; cin>>tmp;
+        vals.push_back({-tmp, i});
+        update(i, 1);
+    }
+    
+    int prev = 0;
+    sort(vals.begin(), vals.end());
+    vector<int> used;
+    long long sum = 0;
+    while(!vals.empty()) {
+        int val = vals.back().first;
+        int idx = vals.back().second;
+        used.push_back(vals.back().second);
+        vals.pop_back();
+        while(!vals.empty() && vals.back().first == val) {
+            if(idx > prev && vals.back().second > idx) {
+                idx = vals.back().second;
+            }
+            else if(idx < prev && vals.back().second < prev && vals.back().second > idx) {
+                idx = vals.back().second;
+            }
+            used.push_back(vals.back().second);
+            vals.pop_back();
+        }
+        if (idx > prev) {
+            sum += query(idx) - query(prev);
+        }
+        else {
+            sum += query(n) - query(prev) + query(idx);  
+        }
+        while(!used.empty()) {
+            update(used.back(), -1);
+            used.pop_back();
+        }
+        prev = idx;
+    }
+    
+    cout<<sum;
+    
+    return 0;
+}

@@ -1,0 +1,104 @@
+5 5 2
+abcde
+0 1 4 4 4
+2 0 4 4 4
+6 5 0 3 2
+5 5 5 0 4
+3 7 0 5 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(Analysis by Eric Wei)
+First, note that it is sometimes possible to change a letter to a different one in faster time than what is originally given.
+To deal with this, we run Floyd-Warshall on the letters to determine the actual shortest amount of time to change each letter to any other letter.
+
+We can now store the fastest time the letter in each index i can be changed to a different letter j, which we represent
+in a cost matrix, cst[i][j]. After this, we can now utilize prefix sums to speed up future computation. We store this in
+ps[i][j], representing the sum of all cst[k][j] for k≤i.
+
+Finally, we can use DP. Let dp[i][j] represent the smallest amount of time needed so that the first i letters create a
+“valid combo” and the last letter is j (so the last K letters are all j). We also create an array, dpmin[i], which
+represents the minimum value of all dp[i][j] across all possible j. The transition is as follows:
+
+dp[i][j] = min(ps[i][j]-ps[i-K][j]+dpmin[i-K],dp[i-1][j]+cst[i][j]);
+There are two possibilities we must consider: either the rightmost streak is exactly K letters long, or it is more than
+that, corresponding to these two possibilities. Calculating dpmin is easy from this, and the final answer is simply dpmin[N].
+The runtime is O(M3+N⋅M). My code follows:
+
+#include <bits/stdc++.h>
+using namespace std;
+
+#define FOR(i, a, b) for (int i=(a); i<=(signed)(b); i++)
+#define F0R(i, a) for (int i=0; i<(signed)(a); i++)
+
+#define MN 100005
+#define MA 26
+int n, m, k;
+string s;
+int d[MA][MA];
+int cst[MN][MA];
+int ps[MN][MA];
+int dp[MN][MA];
+int mn[MN];
+
+int main(){
+    ios_base::sync_with_stdio(false); cin.tie(NULL);
+    freopen("cowmbat.in", "r", stdin);
+    freopen("cowmbat.out", "w", stdout);
+
+    cin >> n >> m >> k >> s;
+    F0R(i, m) F0R(j, m) cin >> d[i][j];
+    F0R(c, m) F0R(a, m) F0R(b, m)
+        d[a][b] = min(d[a][b], d[a][c]+d[c][b]);
+
+    FOR(i, 1, n){
+        F0R(j, m){
+            cst[i][j] = d[s[i-1]-'a'][j];
+            ps[i][j] = ps[i-1][j]+cst[i][j];
+            //cout << i << " " << j << " " << cst[i][j] << "\n";
+        }
+    }
+    memset(dp, 0x3f, sizeof dp);
+    memset(mn, 0x3f, sizeof mn);
+    mn[0] = 0;
+
+    FOR(i, 1, n){
+        F0R(j, m){
+            dp[i][j] = min(dp[i][j], dp[i-1][j]+cst[i][j]);
+            if (i >= k) dp[i][j] = min(dp[i][j], ps[i][j]-ps[i-k][j]+mn[i-k]);
+            //cout << "dp " << i << " " << j << " " << dp[i][j] << "\n";
+            mn[i] = min(mn[i], dp[i][j]);
+        }
+    }
+
+    cout << mn[n] << "\n";
+}

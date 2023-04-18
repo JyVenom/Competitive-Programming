@@ -1,0 +1,27 @@
+none range {low, high}
+highway_data [input # of lines] = {on/off/none,
+                             range low
+                             range high}
+//go through highway data from top to bottom,
+//    combine all none sections by finding overlap range
+go through highway data from bottom to top, starting from last none,
+    if in,
+        none range min - in max
+        none range max - in min
+    if out,
+        none range min + out min
+        none range max + out max
+    if none,
+        narrow overlap range by finding overlap of none range with current line none range
+none range is now start range
+
+go through highway data from top to bottom, starting from first none,
+    if in,
+        none range min + in min
+        none range max + in max
+    if out,
+        none range min - out max
+        none range max - out min
+    if none,
+        narrow overlap range by finding overlap of none range with current line none range
+none range is now end range

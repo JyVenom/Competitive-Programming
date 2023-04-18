@@ -1,0 +1,79 @@
+#include <iostream>
+#include <algorithm>
+#include <vector>
+using namespace std;
+const int MAXN = 1000005;
+ 
+int n, bit[MAXN]; vector <int> pos[MAXN];
+ 
+int query(int p){
+	int ret = 0;
+	for(; p; p -= p & -p)
+		ret += bit[p];
+	return ret;
+}
+
+void update(int p, int v){
+	for(; p <= 1000000; p += p & -p)
+		bit[p] += v;
+}
+
+namespace FastIO {
+	const int BSZ = 1<<15; ////// INPUT
+	char ibuf[BSZ]; int ipos, ilen;
+	char nc() { // next char
+		if (ipos == ilen) {
+			ipos = 0; ilen = fread(ibuf,1,BSZ,stdin);
+			if (!ilen) return EOF;
+		}
+		return ibuf[ipos++];
+	}
+	template<class T> void ri(T& x) { // read int or ll
+		char ch; int sgn = 1;
+		while (!isdigit(ch = nc()));
+		x = ch-'0'; while (isdigit(ch = nc())) x = x*10+(ch-'0');
+	}
+}
+using namespace FastIO;
+
+int main(){
+	int i, j, k, p, lastv; long long ans = 0LL;
+	ri(n);
+	for(i = 1; i <= n; ++ i){
+	    int tmp; ri(tmp);
+		pos[tmp].push_back(i);
+		update(i, 1);
+	}
+	for(i = 1, j = 0; i <= 1000000; ++ i){
+		if(pos[i].empty()) continue;
+		p = upper_bound(pos[i].begin(), pos[i].end(), j) - pos[i].begin();
+		if(p == int(pos[i].size())){
+			ans += query(n) - query(j) + (lastv = query(pos[i][0]));
+			update(pos[i][0], -1);
+			for(k = 1; k < int(pos[i].size()); ++ k){
+				ans -= lastv - 1;
+				ans += (lastv = query(pos[i][k]));
+				update(pos[i][k], -1);
+			} j = pos[i][k - 1];
+		}else{
+			ans += (lastv = query(pos[i][p])) - query(j);
+			update(pos[i][p], -1);
+			for(k = p + 1; k < int(pos[i].size()); ++ k){
+				ans -= lastv - 1;
+				ans += (lastv = query(pos[i][k]));
+				update(pos[i][k], -1);
+			}
+			if(p){
+				ans += query(n) - (lastv - 1);
+				ans += (lastv = query(pos[i][0]));
+				update(pos[i][0], -1);
+				for(k = 1; k < p; ++ k){
+					ans -= lastv - 1;
+					ans += (lastv = query(pos[i][k]));
+					update(pos[i][k], -1);
+				} j = pos[i][k - 1];
+			}else j = pos[i][k - 1];
+		}
+	} cout << ans;
+	return 0;
+}

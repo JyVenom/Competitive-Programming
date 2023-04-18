@@ -1,0 +1,340 @@
+4 10
+7 3 +3
+4 2 -1
+9 3 -1
+1 1 +2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(Analysis by Nick Wu)
+Due to the large number of measurements, we need to sort them in order of day.
+
+When we process a MilkMeasurement3, we need to track the cow whose output is changing and the old and new outputs. After that, we need to see if the cows with maximum output have changed.
+
+To check this, there are a few conditions we need to check. If, for example, the number of cows with the maximum output have changed, then clearly the display will need to be updated. However, the number of cows could stay the same and the display could need to still be updated. To check this, we need to investigate if the cow currently under consideration was originally up there and if they are up there after the MilkMeasurement3 changed.
+
+Here is Mark Gordon's code.
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cstdio>
+#include <set>
+#include <map>
+
+using namespace std;
+
+struct MilkMeasurement3 {
+  int day;
+  int cow;
+  int delta;
+};
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  freopen("MilkMeasurement3.in", "r", stdin);
+  freopen("MilkMeasurement3.out", "w", stdout);
+
+  int N;
+  int G;
+  cin >> N >> G;
+
+  vector<MilkMeasurement3> A(N);
+  for (auto& m : A) {
+    cin >> m.day >> m.cow >> m.delta;
+  }
+  sort(A.begin(), A.end(), [](const MilkMeasurement3& a, const MilkMeasurement3& b) {
+    return a.day < b.day;
+  });
+
+  map<int, int, greater<int> > cnts;
+  cnts[0] = N + 1;
+
+  int result = 0;
+  map<int, int> mp;
+  for (auto& m : A) {
+    int& ref = mp[m.cow];
+
+    bool wastop = ref == cnts.begin()->first;
+    int wascnt = cnts[ref]--;
+    if (wascnt == 1) {
+      cnts.erase(ref);
+    }
+
+    ref += m.delta;
+
+    int iscnt = ++cnts[ref];
+    bool istop = ref == cnts.begin()->first;
+    if (wastop) {
+      if (!istop || wascnt != 1 || iscnt != 1) {
+        ++result;
+      }
+    } else if (istop) {
+      ++result;
+    }
+  }
+  cout << result << endl;
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import java.util.*;
+
+public class MilkMeasurement3
+{
+  public int day;
+  public int cow;
+  public int delta;
+}
+
+package <missing>;
+
+public class GlobalMembers
+{
+//C++ TO JAVA CONVERTER TODO TASK: This 'main' method returns 'int', which is not allowed in Java:
+	public static int main(String[] args)
+	{
+	  ios_base.sync_with_stdio(false);
+	  freopen("MilkMeasurement3.in", "r", stdin);
+	  freopen("MilkMeasurement3.out", "w", stdout);
+
+	  int N;
+	  int G;
+	  N = Integer.parseInt(ConsoleInput.readToWhiteSpace(true));
+	  G = Integer.parseInt(ConsoleInput.readToWhiteSpace(true));
+
+	  ArrayList<MilkMeasurement3> A = new ArrayList<MilkMeasurement3>(N);
+	  for (MilkMeasurement3 m : A)
+	  {
+		m.day = Integer.parseInt(ConsoleInput.readToWhiteSpace(true));
+		m.cow = Integer.parseInt(ConsoleInput.readToWhiteSpace(true));
+		m.delta = Integer.parseInt(ConsoleInput.readToWhiteSpace(true));
+	  }
+//C++ TO JAVA CONVERTER TODO TASK: The 'Compare' parameter of std::sort produces a boolean value, while the Java Comparator parameter produces a tri-state result:
+//ORIGINAL LINE: sort(A.begin(), A.end(), [](const MilkMeasurement3& a, const MilkMeasurement3& b)
+  Collections.sort(A, (MilkMeasurement3 a, MilkMeasurement3 b) ->
+  {
+	return a.day < b.day;
+  });
+
+	  TreeMap<Integer, Integer, greater<Integer>> cnts = new TreeMap<Integer, Integer, greater<Integer>>();
+	  cnts.put(0, N + 1);
+
+	  int result = 0;
+	  TreeMap<Integer, Integer> mp = new TreeMap<Integer, Integer>();
+	  for (MilkMeasurement3 m : A)
+	  {
+//C++ TO JAVA CONVERTER TODO TASK: Java does not have an equivalent to references to value types:
+//ORIGINAL LINE: int& ref = mp[m.cow];
+		int ref = mp.get(m.cow);
+
+		boolean wastop = ref == cnts.iterator().first;
+		int wascnt = cnts.get(ref)--;
+		if (wascnt == 1)
+		{
+		  cnts.remove(ref);
+		}
+
+		ref += m.delta;
+
+		int iscnt = ++cnts.get(ref);
+		boolean istop = ref == cnts.iterator().first;
+		if (wastop)
+		{
+		  if (!istop || wascnt != 1 || iscnt != 1)
+		  {
+			++result;
+		  }
+		}
+		else if (istop)
+		{
+		  ++result;
+		}
+	  }
+	  System.out.print(result);
+	  System.out.print("\n");
+
+	}
+}
+
+//Helper class added by C++ to Java Converter:
+
+package tangible;
+
+//----------------------------------------------------------------------------------------
+//	Copyright © 2006 - 2020 Tangible Software Solutions, Inc.
+//	This class can be used by anyone provided that the copyright notice remains intact.
+//
+//	This class provides the ability to convert basic C++ 'cin' behavior.
+//----------------------------------------------------------------------------------------
+public final class ConsoleInput
+{
+	private static boolean goodLastRead = false;
+	public static boolean lastReadWasGood()
+	{
+		return goodLastRead;
+	}
+
+	public static String readToWhiteSpace(boolean skipLeadingWhiteSpace)
+	{
+		String input = "";
+		char nextChar;
+		while (Character.isWhitespace(nextChar = (char)System.in.read()))
+		{
+			//accumulate leading white space if skipLeadingWhiteSpace is false:
+			if (!skipLeadingWhiteSpace)
+			{
+				input += nextChar;
+			}
+		}
+		//the first non white space character:
+		input += nextChar;
+
+		//accumulate characters until white space is reached:
+		while (!Character.isWhitespace(nextChar = (char)System.in.read()))
+		{
+			input += nextChar;
+		}
+
+		goodLastRead = input.length() > 0;
+		return input;
+	}
+
+	public static String scanfRead()
+	{
+		return scanfRead(null, -1);
+	}
+
+	public static String scanfRead(String unwantedSequence)
+	{
+		return scanfRead(unwantedSequence, -1);
+	}
+
+	public static String scanfRead(String unwantedSequence, int maxFieldLength)
+	{
+		String input = "";
+
+		char nextChar;
+		if (unwantedSequence != null)
+		{
+			nextChar = '\0';
+			for (int charIndex = 0; charIndex < unwantedSequence.length(); charIndex++)
+			{
+				if (Character.isWhitespace(unwantedSequence.charAt(charIndex)))
+				{
+					//ignore all subsequent white space:
+					while (Character.isWhitespace(nextChar = (char)System.in.read()))
+					{
+					}
+				}
+				else
+				{
+					//ensure each character matches the expected character in the sequence:
+					nextChar = (char)System.in.read();
+					if (nextChar != unwantedSequence.charAt(charIndex))
+						return null;
+				}
+			}
+
+			input = (new Character(nextChar)).toString();
+			if (maxFieldLength == 1)
+				return input;
+		}
+
+		while (!Character.isWhitespace(nextChar = (char)System.in.read()))
+		{
+			input += nextChar;
+			if (maxFieldLength == input.length())
+				return input;
+		}
+
+		return input;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

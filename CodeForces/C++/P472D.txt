@@ -1,0 +1,64 @@
+#include <bits/stdc++.h>
+using namespace std;
+#pragma GCC optimize("Ofast")
+#pragma GCC target("avx,avx2,fma")
+
+inline namespace FastIO {
+	const int BSZ = 1<<16; ////// INPUT
+	char ibuf[BSZ]; int ipos, ilen;
+	char nc() { // next char
+		if (ipos == ilen) {
+			ipos = 0; ilen = fread(ibuf,1,BSZ,stdin);
+			if (!ilen) return EOF;
+		}
+		return ibuf[ipos++];
+	}
+	template<class T> void ri(T& x) { // read int or ll
+		char ch; int sgn = 1;
+		while (!isdigit(ch = nc())) if (ch == '-') sgn *= -1;
+		x = ch-'0'; while (isdigit(ch = nc())) x = x*10+(ch-'0');
+		x *= sgn;
+	}
+}
+
+int main(void){
+    cin.tie(0)->sync_with_stdio(0);
+    
+    int n; ri(n);
+    int dist[n][n];
+    for (int i=0; i<n; i++) {
+        for (int j = 0; j < n; j++) {
+            ri(dist[i][j]);
+        }
+    }
+    
+    for (int i = 0; i < n; i++) {
+        if(dist[i][i]) {
+            cout<<"NO";
+            return 0;
+        }
+        for (int j = i+1; j < n; j++) {
+            if (dist[i][j] == 0 || dist[i][j] != dist[j][i]){
+                cout<<"NO";
+                return 0;
+            }
+        }
+    }
+    for(int i = 0; i < n; i++)
+    {
+        int k = 0;
+        for(int j = 0; j < n; j++) {
+            if(i != j && dist[i][k] > dist[i][j]) {
+                k = j;
+            }
+        }
+        for(int j = 0; j < n; j++) {
+            if(i != j && j != k&& abs(dist[i][j] - dist[k][j]) != dist[i][k]) {
+                cout<<"NO";
+                return 0;
+            }
+        }
+    }
+    cout<<"YES";
+    return 0;
+}

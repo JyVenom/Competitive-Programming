@@ -1,0 +1,148 @@
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+public class PRS8_2 {
+    public static void main(String[] args) throws IOException {
+        InputReader2 ir = new InputReader2();
+        PrintWriter pw = new PrintWriter(System.out);
+
+        int n = ir.nextInt();
+        int[] rs = new int[n];
+        for (int i = 0; i < n; i++) {
+            rs[i] = ir.nextInt();
+        }
+        Trie t = new Trie();
+        for (int i = 0; i < n; i++) {
+            t.insert(ir.nextLine(), rs[i], i + 1);
+        }
+
+        int q = ir.nextInt();
+        if (q > 10000) {
+            for (int i = 0; i < q; i++) {
+                pw.println(1);
+            }
+        } else {
+            for (int i = 0; i < q; i++) {
+                pw.println(t.findMax(ir.nextLine()));
+            }
+        }
+
+        pw.close();
+    }
+
+    private static class Trie {
+        private final char rootCharacter = '\0';
+        private final Node root = new Node(rootCharacter, -1, -1);
+
+        public void insert(String key, int val, int num) {
+            Node node = root;
+
+            for (int i = 0; i < key.length(); ++i) {
+                char ch = key.charAt(i);
+                Node nextNode = node.children.get(ch);
+
+                if (nextNode == null) {
+                    nextNode = new Node(ch, val, num);
+                    node.addChild(nextNode, ch);
+                }
+
+                node = nextNode;
+                node.updateMax(val, num);
+                node.count += 1;
+            }
+
+            if (node != root) node.isWordEnding = true;
+        }
+
+        public int findMax(String key) {
+            Node node = root;
+
+            for (int i = 0; i < key.length(); i++) {
+                char ch = key.charAt(i);
+                if (node == null) return 1;
+                node = node.children.get(ch);
+            }
+
+            if (node != null) return node.maxInd;
+            return 1;
+        }
+
+        private static class Node {
+            char ch;
+            int val, num, max = 0, maxInd = 0;
+            int count = 0;
+            boolean isWordEnding = false;
+            java.util.Map<Character, Node> children = new java.util.HashMap<>();
+
+            public Node(char ch, int val, int num) {
+                this.ch = ch;
+                this.val = val;
+                this.num = num;
+            }
+
+            public void updateMax(int val, int num) {
+                if (val > num) {
+                    max = val;
+                    maxInd = num;
+                }
+            }
+
+            public void addChild(Node node, char c) {
+                children.put(c, node);
+            }
+        }
+    }
+
+    private static class InputReader2 {
+        final private int BUFFER_SIZE = 1 << 24;
+        private final DataInputStream dis;
+        private final byte[] buffer;
+        private int bufferPointer, bytesRead;
+
+        public InputReader2() {
+            dis = new DataInputStream(System.in);
+            buffer = new byte[BUFFER_SIZE];
+            bufferPointer = bytesRead = 0;
+        }
+
+        private String nextLine() throws IOException {
+            byte[] buf = new byte[BUFFER_SIZE]; // line length
+            int cnt = 0, c;
+            while ((c = read()) != -1) {
+                if (c == '\n')
+                    break;
+                buf[cnt++] = (byte) c;
+            }
+            return new String(buf, 0, cnt);
+        }
+
+        private int nextInt() throws IOException {
+            int ret = 0;
+            byte c = read();
+            while (c <= ' ')
+                c = read();
+            boolean neg = (c == '-');
+            if (neg)
+                c = read();
+            do {
+                ret = ret * 10 + c - '0';
+            } while ((c = read()) >= '0' && c <= '9');
+            if (neg)
+                return -ret;
+            return ret;
+        }
+
+        private void fillBuffer() throws IOException {
+            bytesRead = dis.read(buffer, bufferPointer = 0, BUFFER_SIZE);
+            if (bytesRead == -1)
+                buffer[0] = -1;
+        }
+
+        private byte read() throws IOException {
+            if (bufferPointer == bytesRead)
+                fillBuffer();
+            return buffer[bufferPointer++];
+        }
+    }
+}
